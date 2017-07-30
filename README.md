@@ -1,4 +1,5 @@
 # flask-raspberrypi-servo
+
 Install a webserver, and deploy a website on a raspberry pi to move a servo motor.
 
 Follow these steps before you start cloning the repo.
@@ -6,18 +7,26 @@ Follow these steps before you start cloning the repo.
 set keyboard to english us
 
 sudo apt-get update
+
 sudo apt-get upgrade
+
 sudo apt-get install vim
 
+
 ~/.vimrc
+
 set smartindent
+
 set tabstop=4
+
 set expandtab
 
 sudo apt-get install nginx
+
 sudo service nginx start
 
 sudo apt-get install build-essential python-dev
+
 sudo pip install uwsgi
 
 sudo pip install flask
@@ -29,16 +38,18 @@ cd switch
 
 #
 
+
 vim app.py
-from flask import Flask
-app = Flask(__name__)
 
-@app.route("/")
-@app.route("/home")
-def home():
-	return "hello world"
+    from flask import Flask
+    app = Flask(__name__)
 
-if __name__ == "__main__":
+    @app.route("/")
+    @app.route("/home")
+    def home():
+        return "hello world"
+
+    if __name__ == "__main__":
 	app.run()
 #
 python app.py
@@ -52,22 +63,22 @@ uwsgi --socket 0.0.0.0:8000 --protocol=http -w app:app
 
 make wsgi init file in the app directory
 
-[uwsgi]
+    [uwsgi]
 
-chdir = /home/pi/Desktop/switch
-module = app:app
+    chdir = /home/pi/Desktop/switch
+    module = app:app
 
-master = true
-processes = 1
-threads = 2
+    master = true
+    processes = 1
+    threads = 2
 
-uid = pi 
-gid = pi
-socket = /tmp/app.sock
-chmod-socket = 777
-vacuum = true
+    uid = pi 
+    gid = pi
+    socket = /tmp/app.sock
+    chmod-socket = 777
+    vacuum = true
 
-die-on-term = true
+    die-on-term = true
 
 #
 Test initialization
@@ -78,26 +89,30 @@ check that a file was created at /tmp/ with app.sock
 #
 
 Set uswgi to start after reboot
+
 sudo vi /etc/rc.local
 
 add this line after exit 0
+
 /usr/local/bin/uwsgi --ini /home/pi/Desktop/switch/uwsgi_config.ini --uid pi --gid pi --daemonize /var/log/uwsgi.log
 
 #
 sudo rm /etc/nginx/sites-enabled/default
+
 sudo service nginx start
+
 sudo vim /etc/nginx/sites-available/app_proxy
 
-server {
- listen 80;
- server_name localhost;
+    server {
+    listen 80;
+    server_name localhost;
 
- location / { try_files $uri @app; }
- location @app {
- include uwsgi_params;
- uwsgi_pass unix:/tmp/app.sock;
- }
-}
+    location / { try_files $uri @app; }
+    location @app {
+    include uwsgi_params;
+    uwsgi_pass unix:/tmp/app.sock;
+    }
+    }
 
 sudo ln -s /etc/nginx/sites-available/app_proxy /etc/nginx/sites_enabled
 
